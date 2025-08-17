@@ -54,8 +54,8 @@ class GetDataSet_KFold(object):
 
         self._index_in_train_epoch = 0
 
-        data_dir_train = r'D:/Project-python/DataSets/{}_KF/{}/train_dataset_{}.csv'.format(n_kf, dataSetName, i_KF)
-        data_dir_test = r'D:/Project-python/DataSets/{}_KF/{}/test_dataset_{}.csv'.format(n_kf, dataSetName, i_KF)
+        data_dir_train = r'训练集路径'.format(n_kf, dataSetName, i_KF)
+        data_dir_test = r'测试集路径'.format(n_kf, dataSetName, i_KF)
         train_dataset = pd.read_csv(data_dir_train, header=None)
         test_dataset = pd.read_csv(data_dir_test, header=None)
 
