@@ -95,7 +95,7 @@ class ClientsGroup(object):
 
         # self.dataSetBalanceAllocation()  # 数据集
         self.dataSet_DirichletAllocation()
-        # self.data_temporary_save()  # 直接读取处理好的客户端数据集，原因：CNN处理的时间很长，1h左右，所需时间与训练1000轮的时间差不多
+        # self.data_temporary_save()  # 直接读取处理好的客户端数据集
 
 
     def dataSet_DirichletAllocation(self):
@@ -125,8 +125,8 @@ class ClientsGroup(object):
 
             data = pd.DataFrame(local_data)
             label = pd.DataFrame(local_label)
-            data.to_csv("D:/trainO/" + str(self.i_KF)+"-fold/"+ str(i)+"_data.csv", header=False, index=False, mode='a')
-            label.to_csv("D:/trainO/" + str(self.i_KF) + "-fold/" + str(i) + "_label.csv", header=False,index=False, mode='a')
+            data.to_csv("特征存储路径", header=False, index=False, mode='a')
+            label.to_csv("标签存储路径", header=False,index=False, mode='a')#存储每个客户端分配的数据，以便后续过采样
             print(str(self.i_KF)+"_"+str(i)+"_"+"分配结束")
             # resampling-undersampling
             if self.is_UnS:
@@ -160,7 +160,7 @@ class ClientsGroup(object):
         for i in range(self.num_of_clients):  # 为clients 划分 local数据
             client_index = list(user_groups[i])
             client_d = train_dataset.loc[client_index]  # client_data: dataframe
-            client_data = pd.read_csv("D:/Project-python/DataSets/10_KF/FraudDetection_temp/train_dataset_" + str(self.i_KF) + "_" + str(i) + ".csv", header=None)
+            client_data = pd.read_csv("已经过采样完毕的数据路径", header=None)
             local_data = client_data.iloc[:, 0:client_data.shape[1] - 1].values  # np类型
             local_label = client_data.iloc[:, -1].values.astype(int)
 
