@@ -26,7 +26,7 @@ parser.add_argument('-nc', '--num_of_clients', type=int, default=20, help='numer
 parser.add_argument('-cf', '--cfraction', type=float, default=0.1, help='C fraction, 0 means 1 client, 1 means total clients')
 parser.add_argument('-E', '--epoch', type=int, default=5, help='local train epoch')
 parser.add_argument('-B', '--batchsize', type=int, default=16, help='local train batch size')
-parser.add_argument('-mn', '--model_name', type=str, default='DNN', help='the model to train')
+parser.add_argument('-mn', '--model_name', type=str, default='mlp', help='the model to train')
 parser.add_argument('-lr', "--learning_rate", type=float, default=0.1, help="learning rate, \
                     use value from origin paper as default")   # 可以尝试在训练中不断减小lr，每 x 轮减少 y
 parser.add_argument('-vf', "--val_freq", type=int, default=5, help="model validation frequency(of communications)")  # （通信的）模型验证频率
@@ -152,7 +152,7 @@ if __name__ == "__main__":
                 for key, var in model.state_dict().items():
                     global_parameters[key] = var.clone()
 
-                data_file_path = 'D:/Project-python/A_Results_{}_S/{}/Test_{}_W({})_(C{}_D{}_S{}_{})'.format(
+                data_file_path = '结果存储路径/A_Results_{}_S/{}/Test_{}_W({})_(C{}_D{}_S{}_{})'.format(
                     args['n_kf'],
                     args['data_name'],
                     args['ReS_method'],
@@ -209,10 +209,7 @@ if __name__ == "__main__":
                                                                                            args['batchsize'], model,
                                                                                            loss_func, opti,
                                                                                            global_parameters)  # 表示client端的训练函数
-                        # for k,v in local_parameters.items():#差分隐私，加噪声
-                        #     # noise = torch.tensor(np.random.laplace(0,10,local_parameters.shape)).to(dev)     #拉普拉斯机制实现差分隐私
-                        #     noise = torch.cuda.FloatTensor(v.shape).normal_(0,10)               #高斯机制实现差分隐私
-                        #     v.add_(noise)
+                     
                         local_losses.append(copy.deepcopy(loss))
                         list_dicts_local_params.append(copy.deepcopy(local_parameters))
 
@@ -273,7 +270,7 @@ if __name__ == "__main__":
                         preds_sum = tensor([]).to(dev)
                         labels_sum = tensor([]).to(dev)
                         # 载入测试集
-                        for data, label in testDataLoader:  # data 是 一个batchsize 的样本吗？？
+                        for data, label in testDataLoader: 
                             data, label = data.to(dev), label.to(dev)
                             preds = model(data.float())
                             # print(preds.shape)
