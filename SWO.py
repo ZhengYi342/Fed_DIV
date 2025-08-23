@@ -1,9 +1,4 @@
-# Large amount of credit goes to:
-# https://github.com/eriklindernoren/Keras-GAN/blob/master/wgan_gp/wgan_gp.py and
-# https://github.com/eriklindernoren/Keras-GAN/blob/master/cgan/cgan.py
-# which I've used as a reference for this implementation
-# Author: Hanling Wang
-# Date: 2018-11-21
+
 
 from __future__ import print_function, division
 
@@ -48,8 +43,8 @@ import numpy as np
 # feature = 29
 # name="creditcard"
 
-feature = 6
-name = "FraudDetection"
+feature = 220
+name = "ieee"
 #记得改判别器和生成器输入的维度
 def eucliDist(A,B):
     return np.sqrt(sum(np.power((A - B), 2)))
@@ -174,11 +169,11 @@ class WGANGP():
 
         # model.add(Dense(256, input_dim=self.latent_dim, activation='relu'))     #添加一个全连接层，输入维度为self.latent_dim，输出维度为256
         # model.add(Dense(1*29*256, activation="relu",input_dim=self.latent_dim))
-        model.add(Dense(1 * 6 * 512, input_dim=self.latent_dim))
+        model.add(Dense(1 * 220 * 512, input_dim=self.latent_dim))
 
         # model.add(Activation('relu'))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Reshape((1, 6, 512)))
+        model.add(Reshape((1, 220, 512)))
         model.add(BatchNormalization(momentum=0.8))
 
         model.add(Conv2D(256, kernel_size=3, padding="same"))
@@ -207,8 +202,8 @@ class WGANGP():
     def build_discriminator(self):
         model = Sequential()
 
-        model.add(Dense(1 * 6 * 128, input_dim=np.prod(self.img_shape)))
-        model.add(Reshape((1, 6, 128)))
+        model.add(Dense(1 * 220 * 128, input_dim=np.prod(self.img_shape)))
+        model.add(Reshape((1, 220, 128)))
 
         model.add(LayerNormalization())
 
@@ -238,8 +233,8 @@ class WGANGP():
         return Model(img, validity)  # 返回模型
 
     def data_init(self,j):
-        dataframe1 = pd.read_csv("D:/all-train/" + str(j) + "-fold/" + name + "_train.csv", header=None)
-        dataframe2 = pd.read_csv("D:/all-train/" + str(j) + "-fold/" + name + "_label.csv", header=None)
+        dataframe1 = pd.read_csv("特征地址", header=None)
+        dataframe2 = pd.read_csv("标签地址", header=None)
         l = len(dataframe2.columns) - 1
         m = dataframe2[l].value_counts()[0]
         w = dataframe2[l].value_counts()[1]
@@ -253,15 +248,15 @@ class WGANGP():
         return w,m,q
     def train(self, j ,q):
 
-        dataframe1 = pd.read_csv("D:/all-train/" + str(j) + "-fold/" + name + "_train.csv", header=None)
-        dataframe2 = pd.read_csv("D:/all-train/" + str(j) + "-fold/" + name + "_label.csv", header=None)
+        dataframe1 = pd.read_csv("特征地址", header=None)
+        dataframe2 = pd.read_csv("标签地址", header=None)
         l = len(dataframe2.columns) - 1
         m = dataframe2[l].value_counts()[0]
         dataframe2.rename(columns={0: len(dataframe1.columns)}, inplace=True)
         df = pd.concat([dataframe1, dataframe2], axis=1)
         dfmin = df[df[len(dataframe1.columns)] == 1]                           #原始少数类样本
         df3 = df[df[len(dataframe1.columns)] == 0]                            #多数类样本
-        dataframe3 = pd.read_csv("D:/pythonProject2/min.csv", header=None)      #更新的少数类样本
+        dataframe3 = pd.read_csv("min.csv", header=None)      #更新的少数类样本
         df2 = dataframe3
         dataframe3.loc[:, len(dataframe1.columns)] = 1
         w = int(df2.shape[0])
@@ -274,6 +269,7 @@ class WGANGP():
         dist = np.zeros((data_all.shape[0] - 1, 2))  # 存储距离的数组
         IX = [0.0] * data_min.shape[0]  # 存储信息值的列表
         N_k = 5  # 所指定的近邻数
+        #改为用矩阵求
         for g in range(data_min.shape[0]):
             count = 0
             for h in range(data_all.shape[0]):
@@ -375,15 +371,7 @@ class WGANGP():
                 W = [x / su for x in W]
                 break
             print("基分类器model" + str(b) + "训练完毕\n")
-        #分类难度越小，概率越大
-        # R_W = [0] * w
-        # sum = 0
-        # for i in range(len(W)):
-        #     R_W[i] = 1 / W[i]
-        #     sum += R_W[i]
-        # for i in range(len(R_W)):
-        #     R_W[i] = R_W[i] / sum
-        #训练WGAN-GP
+
 
         dataset = df2.values
         X_train = dataset[:, 0:len(dataframe1.columns)].astype(np.float32)   #将特征数组转换为浮点型
@@ -492,7 +480,7 @@ class WGANGP():
 
         return w
 if __name__ == '__main__':
-    for i in range(1,4):
+    for i in range(1,10):
         epochs =5000
         batch_size = 32
         sample_interval = 1000
@@ -503,11 +491,12 @@ if __name__ == '__main__':
 
             w=wgan.train(i,q)
             print("少数类总数量"+str(w))
-        if os.path.exists('D:/pythonProject2/min.csv'):
+        if os.path.exists('min.csv'):
                 # 文件存在，执行删除操作
-            os.remove('D:/pythonProject2/min.csv')
+            os.remove('min.csv')
             print('文件 min.csv 删除成功！')
         else:
             # 文件不存在，输出提示信息
             print('文件 min.csv 不存在！无法删除。')
         print("第" + str(i) + "折数据集过采样结束")
+
